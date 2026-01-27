@@ -1,5 +1,5 @@
 import "dotenv/config"; // ← Ajouter aussi ici par sécurité
-import prisma from "../../src/config/database.js";
+import { prisma } from "../../src/config/database.js";
 import bcrypt from "bcrypt";
 
 export async function createUsers() {
