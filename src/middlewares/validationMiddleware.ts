@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import { ZodObject, ZodRawShape, ZodError } from "zod";
 
 /**
- * Valide le corps de la requête (body)
+ * Validate the body of the request
  */
 export const validateBody = <T extends ZodRawShape>(schema: ZodObject<T>) => {
   return async (
@@ -35,7 +35,7 @@ export const validateBody = <T extends ZodRawShape>(schema: ZodObject<T>) => {
 };
 
 /**
- * Valide les paramètres de l'URL (params)
+ * Validate the URL parameters
  */
 export const validateParams = <T extends ZodRawShape>(schema: ZodObject<T>) => {
   return async (
@@ -44,7 +44,6 @@ export const validateParams = <T extends ZodRawShape>(schema: ZodObject<T>) => {
     next: NextFunction
   ): Promise<void> => {
     try {
-      // On valide et on laisse Zod transformer les types
       req.params = (await schema.parseAsync(req.params)) as any;
       next();
     } catch (error) {
@@ -69,8 +68,7 @@ export const validateParams = <T extends ZodRawShape>(schema: ZodObject<T>) => {
 };
 
 /**
- * Valide les query params (?key=value)
- * ⚠️ req.query est en lecture seule, on utilise une propriété custom
+ * Validate the query params (?key=value)
  */
 export const validateQuery = <T extends ZodRawShape>(schema: ZodObject<T>) => {
   return async (
