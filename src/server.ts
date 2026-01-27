@@ -1,18 +1,29 @@
-import "dotenv/config";
 import express from "express";
+import userRoutes from "./routes/userRoutes";
 
 const app = express();
 
-const PORT = process.env.PORT || 3000;
-const NODE_ENV = process.env.NODE_ENV || "development";
+app.use(express.json());
 
-app.get("/", (req, res) => {
-  res.json({
-    message: "Bienvenue sur l'API CESIZen !",
-    status: "OK",
-  });
-});
+app.use("/api/users", userRoutes);
+
+app.use(
+  (
+    err: any,
+    req: express.Request,
+    res: express.Response,
+    next: express.NextFunction
+  ) => {
+    console.error(err);
+    res.status(err.status || 500).json({
+      success: false,
+      error: err.message || "Server error",
+    });
+  }
+);
+
+const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
-  console.log(`✅ Serveur démarré sur http://localhost:${PORT}`);
+  console.log(`🚀 Server running on port ${PORT}`);
 });
