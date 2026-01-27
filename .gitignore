@@ -6,6 +6,8 @@ node_modules/
 
 # Prisma
 prisma/migrations/
+src/generated/prisma/
+prisma/client/
 
 # Logs
 logs/
@@ -25,3 +27,5 @@ Thumbs.db
 # Build
 dist/
 build/
+
+/src/generated/prisma
