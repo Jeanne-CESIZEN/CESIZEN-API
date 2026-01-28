@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import * as UserService from "@/services/userService";
-import { CreateUserInput, UpdateUserInput } from "@/validators/userValidator";
+import { CreateUserInput, UpdateUserInput } from "@/schemas/user";
 
 /**
  * POST /api/users

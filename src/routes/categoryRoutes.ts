@@ -10,7 +10,7 @@ import {
   updateCategorySchema,
   categoryIdSchema,
   searchCategorySchema,
-} from "@/validators/categoryValidator";
+} from "@/schemas/category";
 
 const router = Router();
 

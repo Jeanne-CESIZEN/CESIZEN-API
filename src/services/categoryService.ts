@@ -3,7 +3,7 @@ import {
   CreateCategoryInput,
   UpdateCategoryInput,
   CategoryResponse,
-} from "@/validators/categoryValidator";
+} from "@/schemas/category";
 
 export const createCategory = async (
   data: CreateCategoryInput
