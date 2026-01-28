@@ -1,9 +1,6 @@
 import { Request, Response } from "express";
 import * as CategoryService from "@/services/categoryService";
-import {
-  CreateCategoryInput,
-  UpdateCategoryInput,
-} from "@/validators/categoryValidator";
+import { CreateCategoryInput, UpdateCategoryInput } from "@/schemas/category";
 
 /**
  * POST /api/categories

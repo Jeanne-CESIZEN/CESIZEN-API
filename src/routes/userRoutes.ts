@@ -10,7 +10,7 @@ import {
   updateUserSchema,
   userIdSchema,
   searchUserSchema,
-} from "@/validators/userValidator";
+} from "@/schemas/user";
 
 const router = Router();
 
