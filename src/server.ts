@@ -2,6 +2,7 @@ import express from "express";
 import userRoutes from "@/routes/userRoutes";
 import categoryRoutes from "@/routes/categoryRoutes";
 import articleRoutes from "@/routes/articleRoutes";
+import baseEmotionRoutes from "@/routes/baseEmotionRoutes";
 
 const app = express();
 
@@ -10,6 +11,7 @@ app.use(express.json());
 app.use("/api/users", userRoutes);
 app.use("/api/categories", categoryRoutes);
 app.use("/api/articles", articleRoutes);
+app.use("/api/base-emotions", baseEmotionRoutes);
 
 app.use(
   (

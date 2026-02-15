@@ -50,3 +50,14 @@ export const ARTICLE_SELECT: Prisma.ArticleSelect = {
   createdAt: true,
   updatedAt: true,
 };
+
+/**
+ * Standard base emotion select
+ * Returns all base emotion fields
+ */
+export const BASE_EMOTION_SELECT: Prisma.BaseEmotionSelect = {
+  id: true,
+  name: true,
+  createdAt: true,
+  updatedAt: true,
+};
