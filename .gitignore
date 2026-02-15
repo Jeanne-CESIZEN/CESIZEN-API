@@ -29,3 +29,5 @@ dist/
 build/
 
 /src/generated/prisma
+
+/postman
