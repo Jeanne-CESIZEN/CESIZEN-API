@@ -35,3 +35,18 @@ export const CATEGORY_SELECT: Prisma.CategorySelect = {
   createdAt: true,
   updatedAt: true,
 };
+
+/**
+ * Standard article select
+ * Returns all article fields
+ */
+export const ARTICLE_SELECT: Prisma.ArticleSelect = {
+  id: true,
+  categoryId: true,
+  title: true,
+  description: true,
+  content: true,
+  imagePath: true,
+  createdAt: true,
+  updatedAt: true,
+};
