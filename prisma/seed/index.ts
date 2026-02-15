@@ -1,12 +1,14 @@
 import "dotenv/config";
 import { prisma } from "../../src/config/database.js";
 import { createUsers } from "./user.js";
+import { createBaseEmotions } from "./baseEmotion.js";
 
 async function main() {
   console.log("🌱 Starting database seeding...\n");
 
   try {
     await createUsers();
+    await createBaseEmotions();
 
     console.log("\n✅ Database seeding completed successfully!");
   } catch (error) {
