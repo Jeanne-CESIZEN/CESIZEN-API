@@ -34,7 +34,7 @@ export const getAllCategories = async (): Promise<CategoryResponse[]> => {
 };
 
 export const getCategoryById = async (
-  id: number
+  id: string
 ): Promise<CategoryResponse> => {
   const category = await prisma.category.findUnique({
     where: { id },
@@ -49,7 +49,7 @@ export const getCategoryById = async (
 };
 
 export const updateCategory = async (
-  id: number,
+  id: string,
   data: UpdateCategoryInput
 ): Promise<CategoryResponse> => {
   const existingCategory = await prisma.category.findUnique({
@@ -81,7 +81,7 @@ export const updateCategory = async (
   return updatedCategory;
 };
 
-export const deleteCategory = async (id: number): Promise<void> => {
+export const deleteCategory = async (id: string): Promise<void> => {
   const category = await prisma.category.findUnique({
     where: { id },
     select: { id: true },

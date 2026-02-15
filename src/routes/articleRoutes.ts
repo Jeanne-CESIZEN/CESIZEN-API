@@ -17,7 +17,7 @@ const router = Router();
 // GET /api/articles
 router.get("/", ArticleController.getAllArticles);
 
-// GET /api/articles/search?q=query&categoryId=1
+// GET /api/articles/search?q=query&categoryId=<cuid>
 router.get(
   "/search",
   validateQuery(searchArticleSchema),

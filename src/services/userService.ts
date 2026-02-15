@@ -40,7 +40,7 @@ export const getAllUsers = async (): Promise<UserResponse[]> => {
   });
 };
 
-export const getUserById = async (id: number): Promise<UserResponse> => {
+export const getUserById = async (id: string): Promise<UserResponse> => {
   const user = await prisma.user.findUnique({
     where: { id },
     select: USER_SELECT,
@@ -95,7 +95,7 @@ export const searchUsers = async (
 };
 
 export const updateUser = async (
-  id: number,
+  id: string,
   data: UpdateUserInput
 ): Promise<UserResponse> => {
   const existingUser = await prisma.user.findUnique({
@@ -131,7 +131,7 @@ export const updateUser = async (
   return updatedUser;
 };
 
-export const deactivateUser = async (id: number): Promise<UserResponse> => {
+export const deactivateUser = async (id: string): Promise<UserResponse> => {
   const user = await prisma.user.findUnique({
     where: { id },
     select: USER_SELECT,
@@ -158,7 +158,7 @@ export const deactivateUser = async (id: number): Promise<UserResponse> => {
   });
 };
 
-export const activateUser = async (id: number): Promise<UserResponse> => {
+export const activateUser = async (id: string): Promise<UserResponse> => {
   const user = await prisma.user.findUnique({
     where: { id },
     select: USER_SELECT,
@@ -175,7 +175,7 @@ export const activateUser = async (id: number): Promise<UserResponse> => {
   });
 };
 
-export const deleteUser = async (id: number): Promise<void> => {
+export const deleteUser = async (id: string): Promise<void> => {
   const user = await prisma.user.findUnique({
     where: { id },
     select: USER_SELECT,

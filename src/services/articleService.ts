@@ -32,7 +32,7 @@ export const getAllArticles = async (): Promise<ArticleResponse[]> => {
   });
 };
 
-export const getArticleById = async (id: number): Promise<ArticleResponse> => {
+export const getArticleById = async (id: string): Promise<ArticleResponse> => {
   const article = await prisma.article.findUnique({
     where: { id },
     select: ARTICLE_SELECT,
@@ -46,7 +46,7 @@ export const getArticleById = async (id: number): Promise<ArticleResponse> => {
 };
 
 export const updateArticle = async (
-  id: number,
+  id: string,
   data: UpdateArticleInput
 ): Promise<ArticleResponse> => {
   const existingArticle = await prisma.article.findUnique({
@@ -76,7 +76,7 @@ export const updateArticle = async (
   });
 };
 
-export const deleteArticle = async (id: number): Promise<void> => {
+export const deleteArticle = async (id: string): Promise<void> => {
   const article = await prisma.article.findUnique({
     where: { id },
     select: { id: true },

@@ -2,6 +2,8 @@ import { Request, Response } from "express";
 import * as ArticleService from "@/services/articleService";
 import { CreateArticleInput, UpdateArticleInput } from "@/schemas/article";
 
+type IdParams = { id: string };
+
 /**
  * POST /api/articles
  */
@@ -53,9 +55,12 @@ export const getAllArticles = async (req: Request, res: Response) => {
 /**
  * GET /api/articles/:id
  */
-export const getArticleById = async (req: Request, res: Response) => {
+export const getArticleById = async (
+  req: Request<IdParams>,
+  res: Response
+) => {
   try {
-    const id = Number(req.params.id);
+    const { id } = req.params;
     const article = await ArticleService.getArticleById(id);
 
     res.status(200).json({
@@ -80,9 +85,12 @@ export const getArticleById = async (req: Request, res: Response) => {
 /**
  * PUT /api/articles/:id
  */
-export const updateArticle = async (req: Request, res: Response) => {
+export const updateArticle = async (
+  req: Request<IdParams>,
+  res: Response
+) => {
   try {
-    const id = Number(req.params.id);
+    const { id } = req.params;
     const data = req.body as UpdateArticleInput;
     const article = await ArticleService.updateArticle(id, data);
 
@@ -118,9 +126,12 @@ export const updateArticle = async (req: Request, res: Response) => {
 /**
  * DELETE /api/articles/:id
  */
-export const deleteArticle = async (req: Request, res: Response) => {
+export const deleteArticle = async (
+  req: Request<IdParams>,
+  res: Response
+) => {
   try {
-    const id = Number(req.params.id);
+    const { id } = req.params;
     await ArticleService.deleteArticle(id);
 
     res.status(200).json({
@@ -143,7 +154,7 @@ export const deleteArticle = async (req: Request, res: Response) => {
 };
 
 /**
- * GET /api/articles/search?q=query&categoryId=1
+ * GET /api/articles/search?q=query&categoryId=<cuid>
  */
 export const searchArticles = async (req: Request, res: Response) => {
   try {
