@@ -2,6 +2,8 @@ import { Request, Response } from "express";
 import * as CategoryService from "@/services/categoryService";
 import { CreateCategoryInput, UpdateCategoryInput } from "@/schemas/category";
 
+type IdParams = { id: string };
+
 /**
  * POST /api/categories
  */
@@ -54,10 +56,13 @@ export const getAllCategories = async (req: Request, res: Response) => {
 /**
  * GET /api/categories/:id
  */
-export const getCategoryById = async (req: Request, res: Response) => {
+export const getCategoryById = async (
+  req: Request<IdParams>,
+  res: Response
+) => {
   try {
     const { id } = req.params;
-    const category = await CategoryService.getCategoryById(Number(id));
+    const category = await CategoryService.getCategoryById(id);
 
     res.status(200).json({
       success: true,
@@ -81,12 +86,15 @@ export const getCategoryById = async (req: Request, res: Response) => {
 /**
  * PUT /api/categories/:id
  */
-export const updateCategory = async (req: Request, res: Response) => {
+export const updateCategory = async (
+  req: Request<IdParams>,
+  res: Response
+) => {
   try {
     const { id } = req.params;
     const data = req.body as UpdateCategoryInput;
 
-    const category = await CategoryService.updateCategory(Number(id), data);
+    const category = await CategoryService.updateCategory(id, data);
 
     res.status(200).json({
       success: true,
@@ -118,10 +126,13 @@ export const updateCategory = async (req: Request, res: Response) => {
 /**
  * DELETE /api/categories/:id
  */
-export const deleteCategory = async (req: Request, res: Response) => {
+export const deleteCategory = async (
+  req: Request<IdParams>,
+  res: Response
+) => {
   try {
     const { id } = req.params;
-    await CategoryService.deleteCategory(Number(id));
+    await CategoryService.deleteCategory(id);
 
     res.status(200).json({
       success: true,
@@ -147,10 +158,8 @@ export const deleteCategory = async (req: Request, res: Response) => {
  */
 export const searchCategories = async (req: Request, res: Response) => {
   try {
-    const { q } = req.query;
-    const categories = await CategoryService.searchCategories(
-      (q as string) || ""
-    );
+    const query = (req as any).validatedQuery?.q || "";
+    const categories = await CategoryService.searchCategories(query);
 
     res.status(200).json({
       success: true,

@@ -2,6 +2,8 @@ import { Request, Response } from "express";
 import * as UserService from "@/services/userService";
 import { CreateUserInput, UpdateUserInput } from "@/schemas/user";
 
+type IdParams = { id: string };
+
 /**
  * POST /api/users
  */
@@ -53,9 +55,9 @@ export const getAllUsers = async (req: Request, res: Response) => {
 /**
  * GET /api/users/:id
  */
-export const getUserById = async (req: Request, res: Response) => {
+export const getUserById = async (req: Request<IdParams>, res: Response) => {
   try {
-    const id = Number(req.params.id);
+    const { id } = req.params;
     const user = await UserService.getUserById(id);
 
     res.status(200).json({
@@ -80,9 +82,9 @@ export const getUserById = async (req: Request, res: Response) => {
 /**
  * PUT /api/users/:id
  */
-export const updateUser = async (req: Request, res: Response) => {
+export const updateUser = async (req: Request<IdParams>, res: Response) => {
   try {
-    const id = Number(req.params.id);
+    const { id } = req.params;
     const updateData = req.body as UpdateUserInput;
 
     const user = await UserService.updateUser(id, updateData);
@@ -117,9 +119,12 @@ export const updateUser = async (req: Request, res: Response) => {
 /**
  * PATCH /api/users/:id/deactivate
  */
-export const deactivateUser = async (req: Request, res: Response) => {
+export const deactivateUser = async (
+  req: Request<IdParams>,
+  res: Response
+) => {
   try {
-    const id = Number(req.params.id);
+    const { id } = req.params;
     const user = await UserService.deactivateUser(id);
 
     res.status(200).json({
@@ -152,9 +157,9 @@ export const deactivateUser = async (req: Request, res: Response) => {
 /**
  * PATCH /api/users/:id/activate
  */
-export const activateUser = async (req: Request, res: Response) => {
+export const activateUser = async (req: Request<IdParams>, res: Response) => {
   try {
-    const id = Number(req.params.id);
+    const { id } = req.params;
     const user = await UserService.activateUser(id);
 
     res.status(200).json({
@@ -180,9 +185,9 @@ export const activateUser = async (req: Request, res: Response) => {
 /**
  * DELETE /api/users/:id
  */
-export const deleteUser = async (req: Request, res: Response) => {
+export const deleteUser = async (req: Request<IdParams>, res: Response) => {
   try {
-    const id = Number(req.params.id);
+    const { id } = req.params;
     await UserService.deleteUser(id);
 
     res.status(200).json({
@@ -216,8 +221,8 @@ export const deleteUser = async (req: Request, res: Response) => {
  */
 export const searchUsers = async (req: Request, res: Response) => {
   try {
-    const query = (req as any).validatedQuery?.q || "";
-    const users = await UserService.searchUsers(query);
+    const filters = (req as any).validatedQuery || {};
+    const users = await UserService.searchUsers(filters);
 
     res.status(200).json({
       success: true,

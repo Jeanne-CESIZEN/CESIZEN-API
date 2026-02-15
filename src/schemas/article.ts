@@ -1,8 +1,8 @@
 import { z } from "zod";
 
 export const zArticle = z.object({
-  id: z.number(),
-  categoryId: z.number().int().positive(),
+  id: z.string().cuid("ID must be a valid CUID"),
+  categoryId: z.string().cuid("Category ID must be a valid CUID"),
   title: z.string().min(2, "Title must be at least 2 characters").trim(),
   description: z
     .string()
@@ -33,16 +33,12 @@ export const updateArticleSchema = zArticle
   .partial();
 
 export const articleIdSchema = z.object({
-  id: z.string().regex(/^\d+$/, "ID must be a valid number").transform(Number),
+  id: z.string().cuid("ID must be a valid CUID"),
 });
 
 export const searchArticleSchema = z.object({
   q: z.string().trim().min(1, "Search query must not be empty").optional(),
-  categoryId: z
-    .string()
-    .regex(/^\d+$/, "Category ID must be a valid number")
-    .transform(Number)
-    .optional(),
+  categoryId: z.string().cuid("Category ID must be a valid CUID").optional(),
 });
 
 export type ArticleResponse = z.infer<typeof zArticle>;

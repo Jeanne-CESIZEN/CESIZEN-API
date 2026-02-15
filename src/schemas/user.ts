@@ -2,7 +2,7 @@ import { z } from "zod";
 import { Role } from "@/generated/prisma";
 
 export const zUser = z.object({
-  id: z.number(),
+  id: z.string().cuid("ID must be a valid CUID"),
   firstname: z
     .string()
     .min(2, "First name must be at least 2 characters")
@@ -36,7 +36,7 @@ export const updateUserSchema = zUser
   .partial();
 
 export const userIdSchema = z.object({
-  id: z.string().regex(/^\d+$/, "ID must be a valid number").transform(Number),
+  id: z.string().cuid("ID must be a valid CUID"),
 });
 
 export const searchUserSchema = z.object({

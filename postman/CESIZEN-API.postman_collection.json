@@ -215,7 +215,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"categoryId\": {{categoryId}},\n  \"title\": \"Article test {{$timestamp}}\",\n  \"description\": \"Description article de test\",\n  \"content\": \"Contenu complet de l article de test.\",\n  \"imagePath\": \"/uploads/article-test.jpg\"\n}"
+              "raw": "{\n  \"categoryId\": \"{{categoryId}}\",\n  \"title\": \"Article test {{$timestamp}}\",\n  \"description\": \"Description article de test\",\n  \"content\": \"Contenu complet de l article de test.\",\n  \"imagePath\": \"/uploads/article-test.jpg\"\n}"
             },
             "url": "{{baseUrl}}/articles"
           }
@@ -253,7 +253,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"categoryId\": {{categoryId}},\n  \"title\": \"Article update {{$timestamp}}\",\n  \"description\": \"Description mise a jour\",\n  \"content\": \"Nouveau contenu de l article.\",\n  \"imagePath\": \"/uploads/article-update.jpg\"\n}"
+              "raw": "{\n  \"categoryId\": \"{{categoryId}}\",\n  \"title\": \"Article update {{$timestamp}}\",\n  \"description\": \"Description mise a jour\",\n  \"content\": \"Nouveau contenu de l article.\",\n  \"imagePath\": \"/uploads/article-update.jpg\"\n}"
             },
             "url": "{{baseUrl}}/articles/{{articleId}}"
           }
@@ -275,15 +275,15 @@
     },
     {
       "key": "userId",
-      "value": "1"
+      "value": "cm00000000000000000000001"
     },
     {
       "key": "categoryId",
-      "value": "1"
+      "value": "cm00000000000000000000002"
     },
     {
       "key": "articleId",
-      "value": "1"
+      "value": "cm00000000000000000000003"
     }
   ]
 }
