@@ -4,6 +4,7 @@ import categoryRoutes from "@/routes/categoryRoutes";
 import articleRoutes from "@/routes/articleRoutes";
 import baseEmotionRoutes from "@/routes/baseEmotionRoutes";
 import detailedEmotionRoutes from "@/routes/detailedEmotionRoutes";
+import trackerEntryRoutes from "@/routes/trackerEntryRoutes";
 
 const app = express();
 
@@ -14,6 +15,7 @@ app.use("/api/categories", categoryRoutes);
 app.use("/api/articles", articleRoutes);
 app.use("/api/base-emotions", baseEmotionRoutes);
 app.use("/api/detailed-emotions", detailedEmotionRoutes);
+app.use("/api/tracker-entries", trackerEntryRoutes);
 
 app.use(
   (
