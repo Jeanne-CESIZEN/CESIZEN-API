@@ -73,3 +73,16 @@ export const DETAILED_EMOTION_SELECT: Prisma.DetailedEmotionSelect = {
   createdAt: true,
   updatedAt: true,
 };
+
+/**
+ * Standard tracker entry select
+ * Returns all tracker entry fields
+ */
+export const TRACKER_ENTRY_SELECT: Prisma.TrackerEntrySelect = {
+  id: true,
+  userId: true,
+  detailedEmotionId: true,
+  comment: true,
+  createdAt: true,
+  updatedAt: true,
+};
