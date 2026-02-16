@@ -61,3 +61,15 @@ export const BASE_EMOTION_SELECT: Prisma.BaseEmotionSelect = {
   createdAt: true,
   updatedAt: true,
 };
+
+/**
+ * Standard detailed emotion select
+ * Returns all detailed emotion fields
+ */
+export const DETAILED_EMOTION_SELECT: Prisma.DetailedEmotionSelect = {
+  id: true,
+  baseEmotionId: true,
+  name: true,
+  createdAt: true,
+  updatedAt: true,
+};

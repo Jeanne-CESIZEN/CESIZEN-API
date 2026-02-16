@@ -3,6 +3,7 @@ import userRoutes from "@/routes/userRoutes";
 import categoryRoutes from "@/routes/categoryRoutes";
 import articleRoutes from "@/routes/articleRoutes";
 import baseEmotionRoutes from "@/routes/baseEmotionRoutes";
+import detailedEmotionRoutes from "@/routes/detailedEmotionRoutes";
 
 const app = express();
 
@@ -12,6 +13,7 @@ app.use("/api/users", userRoutes);
 app.use("/api/categories", categoryRoutes);
 app.use("/api/articles", articleRoutes);
 app.use("/api/base-emotions", baseEmotionRoutes);
+app.use("/api/detailed-emotions", detailedEmotionRoutes);
 
 app.use(
   (

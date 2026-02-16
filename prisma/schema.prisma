@@ -75,13 +75,14 @@ model BaseEmotion {
 model DetailedEmotion {
   id            String   @id @default(cuid())
   baseEmotionId String
-  name          String   @unique
+  name          String
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
   baseEmotion    BaseEmotion    @relation(fields: [baseEmotionId], references: [id], onDelete: Cascade)
   trackerEntries TrackerEntry[]
 
+  @@unique([baseEmotionId, name])
   @@map("detailed_emotions")
 }
 
