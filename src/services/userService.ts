@@ -7,7 +7,7 @@ import {
   SearchUserQuery,
 } from "@/schemas/user";
 import { hashPassword } from "@/utils/hashPassword";
-import { Role } from "@/generated/prisma/client";
+import { Role } from "@/generated/prisma";
 
 export const createUser = async (
   data: CreateUserInput

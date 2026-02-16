@@ -18,11 +18,15 @@ type AuthLoginResponse = TokenPair & {
   user: UserResponse;
 };
 
+type AuthUserForTokens = UserResponse & {
+  tokenVersion: number;
+};
+
 const hashRefreshTokenBcrypt = async (token: string): Promise<string> => {
   return await bcrypt.hash(token, 10);
 };
 
-const issueTokenPair = async (user: UserResponse): Promise<TokenPair> => {
+const issueTokenPair = async (user: AuthUserForTokens): Promise<TokenPair> => {
   const tokenId = crypto.randomUUID();
 
   const accessToken = jwt.sign(
@@ -31,6 +35,7 @@ const issueTokenPair = async (user: UserResponse): Promise<TokenPair> => {
       type: "access",
       email: user.email,
       role: user.role,
+      tokenVersion: user.tokenVersion,
     },
     authConfig.accessTokenSecret,
     { expiresIn: authConfig.accessTokenTtlSeconds }
@@ -72,7 +77,10 @@ const issueTokenPair = async (user: UserResponse): Promise<TokenPair> => {
 export const login = async (data: LoginInput): Promise<AuthLoginResponse> => {
   const userWithPassword = await prisma.user.findUnique({
     where: { email: data.email },
-    select: USER_WITH_PASSWORD_SELECT,
+    select: {
+      ...USER_WITH_PASSWORD_SELECT,
+      tokenVersion: true,
+    },
   });
 
   if (!userWithPassword) {
@@ -92,8 +100,11 @@ export const login = async (data: LoginInput): Promise<AuthLoginResponse> => {
     throw new Error("INVALID_CREDENTIALS");
   }
 
-  const { password, ...user } = userWithPassword;
-  const tokens = await issueTokenPair(user);
+  const { password, tokenVersion, ...user } = userWithPassword;
+  const tokens = await issueTokenPair({
+    ...user,
+    tokenVersion,
+  });
 
   return {
     ...tokens,
@@ -153,7 +164,10 @@ export const refresh = async (
 
   const user = await prisma.user.findUnique({
     where: { id: storedToken.userId },
-    select: USER_SELECT,
+    select: {
+      ...USER_SELECT,
+      tokenVersion: true,
+    },
   });
 
   if (!user) {
@@ -164,16 +178,21 @@ export const refresh = async (
     throw new Error("USER_INACTIVE");
   }
 
+  const { tokenVersion, ...publicUser } = user;
+
   await prisma.refreshToken.update({
     where: { id: storedToken.id },
     data: { revokedAt: new Date() },
   });
 
-  const tokens = await issueTokenPair(user);
+  const tokens = await issueTokenPair({
+    ...publicUser,
+    tokenVersion,
+  });
 
   return {
     ...tokens,
-    user,
+    user: publicUser,
   };
 };
 
@@ -208,10 +227,20 @@ export const logout = async (data: RefreshTokenInput): Promise<void> => {
       return;
     }
 
-    await prisma.refreshToken.update({
-      where: { id: decoded.tokenId },
-      data: { revokedAt: new Date() },
-    });
+    await prisma.$transaction([
+      prisma.refreshToken.update({
+        where: { id: decoded.tokenId },
+        data: { revokedAt: new Date() },
+      }),
+      prisma.user.update({
+        where: { id: storedToken.userId },
+        data: {
+          tokenVersion: {
+            increment: 1,
+          },
+        },
+      }),
+    ]);
   } catch {
     return;
   }

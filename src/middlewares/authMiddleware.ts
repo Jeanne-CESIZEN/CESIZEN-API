@@ -29,26 +29,39 @@ export const requireAuth = async (
       });
     }
 
-    if (decoded.type !== "access" || !decoded.sub || typeof decoded.sub !== "string") {
+    if (
+      decoded.type !== "access" ||
+      !decoded.sub ||
+      typeof decoded.sub !== "string" ||
+      typeof decoded.tokenVersion !== "number"
+    ) {
       return res.status(401).json({
         success: false,
         message: "Invalid access token",
       });
     }
 
-    const user = await prisma.user.findUnique({
+    const userWithTokenVersion = await prisma.user.findUnique({
       where: { id: decoded.sub },
-      select: USER_SELECT,
+      select: {
+        ...USER_SELECT,
+        tokenVersion: true,
+      },
     });
 
-    if (!user || !user.isActive) {
+    if (
+      !userWithTokenVersion ||
+      !userWithTokenVersion.isActive ||
+      userWithTokenVersion.tokenVersion !== decoded.tokenVersion
+    ) {
       return res.status(401).json({
         success: false,
         message: "Unauthorized",
       });
     }
 
-    (req as any).authUser = user;
+    const { tokenVersion, ...authUser } = userWithTokenVersion;
+    (req as any).authUser = authUser;
     next();
   } catch (error) {
     return res.status(401).json({
