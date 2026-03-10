@@ -1,4 +1,5 @@
 import { Request, Response } from "express";
+import { Prisma } from "@/generated/prisma";
 import * as UserService from "@/services/userService";
 import { CreateUserInput, UpdateUserInput } from "@/schemas/user";
 
@@ -25,9 +26,30 @@ export const createUser = async (req: Request, res: Response) => {
       });
     }
 
+    if (error instanceof Prisma.PrismaClientInitializationError) {
+      console.error("Database initialization error while creating user:", error);
+      return res.status(500).json({
+        success: false,
+        message: "Database connection error",
+      });
+    }
+
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error.code === "P2021" || error.code === "P2022") {
+        console.error("Database schema mismatch while creating user:", error);
+        return res.status(500).json({
+          success: false,
+          message:
+            "Database schema is not up to date. Run `npm run db:push` and retry.",
+        });
+      }
+    }
+
+    console.error("Error creating user:", error);
     res.status(500).json({
       success: false,
       message: "Error creating user",
+      error: error instanceof Error ? error.message : "Unknown error",
     });
   }
 };

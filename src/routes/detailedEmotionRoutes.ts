@@ -5,12 +5,14 @@ import {
   validateParams,
   validateQuery,
 } from "@/middlewares/validationMiddleware";
+import { requireRole } from "@/middlewares/roleMiddleware";
 import {
   createDetailedEmotionSchema,
   updateDetailedEmotionSchema,
   detailedEmotionIdSchema,
   searchDetailedEmotionSchema,
 } from "@/schemas/detailedEmotion";
+import { Role } from "@/generated/prisma";
 
 const router = Router();
 
@@ -34,6 +36,7 @@ router.get(
 // POST /api/detailed-emotions
 router.post(
   "/",
+  requireRole(Role.ADMIN),
   validateBody(createDetailedEmotionSchema),
   DetailedEmotionController.createDetailedEmotion
 );

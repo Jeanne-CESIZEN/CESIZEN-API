@@ -1,8 +1,9 @@
 import { z } from "zod";
+import { zBaseEmotion } from "./baseEmotion";
 
 export const zDetailedEmotion = z.object({
-  id: z.string().cuid("ID must be a valid CUID"),
-  baseEmotionId: z.string().cuid("Base emotion ID must be a valid CUID"),
+  id: z.cuid("ID must be a valid CUID"),
+  baseEmotionId: zBaseEmotion.shape.id,
   name: z
     .string()
     .min(2, "Name must be at least 2 characters")
@@ -24,9 +25,7 @@ export const updateDetailedEmotionSchema = zDetailedEmotion
   })
   .partial();
 
-export const detailedEmotionIdSchema = z.object({
-  id: z.string().cuid("ID must be a valid CUID"),
-});
+export const detailedEmotionIdSchema = zDetailedEmotion.pick({ id: true });
 
 export const searchDetailedEmotionSchema = z.object({
   q: z.string().min(1, "Search query must not be empty").optional(),

@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 export const zCategory = z.object({
-  id: z.string().cuid("ID must be a valid CUID"),
+  id: z.cuid("ID must be a valid CUID"),
   name: z.string().min(2, "Name must be at least 2 characters"),
   description: z
     .string()
@@ -23,9 +23,7 @@ export const updateCategorySchema = zCategory
   })
   .partial();
 
-export const categoryIdSchema = z.object({
-  id: z.string().cuid("ID must be a valid CUID"),
-});
+export const categoryIdSchema = zCategory.pick({ id: true });
 
 export const searchCategorySchema = z.object({
   q: z.string().min(1, "Search query must not be empty").optional(),

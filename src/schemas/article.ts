@@ -1,8 +1,9 @@
 import { z } from "zod";
+import { zCategory } from "./category";
 
 export const zArticle = z.object({
-  id: z.string().cuid("ID must be a valid CUID"),
-  categoryId: z.string().cuid("Category ID must be a valid CUID"),
+  id: z.cuid("ID must be a valid CUID"),
+  categoryId: zCategory.shape.id,
   title: z.string().min(2, "Title must be at least 2 characters").trim(),
   description: z
     .string()
@@ -32,13 +33,11 @@ export const updateArticleSchema = zArticle
   })
   .partial();
 
-export const articleIdSchema = z.object({
-  id: z.string().cuid("ID must be a valid CUID"),
-});
+export const articleIdSchema = zArticle.pick({ id: true });
 
 export const searchArticleSchema = z.object({
   q: z.string().trim().min(1, "Search query must not be empty").optional(),
-  categoryId: z.string().cuid("Category ID must be a valid CUID").optional(),
+  categoryId: z.cuid("Category ID must be a valid CUID").optional(),
 });
 
 export type ArticleResponse = z.infer<typeof zArticle>;
