@@ -1,12 +1,17 @@
 import { z } from "zod";
+import { zUser } from "./user";
+import { zDetailedEmotion } from "./detailedEmotion";
 
 export const zTrackerEntry = z.object({
-  id: z.string().cuid("ID must be a valid CUID"),
-  userId: z.string().cuid("User ID must be a valid CUID"),
+  id: z.cuid("ID must be a valid CUID"),
+  userId: zUser.shape.id,
   detailedEmotionId: z
     .string()
     .cuid("Detailed emotion ID must be a valid CUID"),
-  comment: z.string().max(1000, "Comment must not exceed 1000 characters").optional(),
+  comment: z
+    .string()
+    .max(1000, "Comment must not exceed 1000 characters")
+    .optional(),
   createdAt: z.date(),
   updatedAt: z.date(),
 });
@@ -25,21 +30,14 @@ export const updateTrackerEntrySchema = zTrackerEntry
   })
   .partial();
 
-export const trackerEntryIdSchema = z.object({
-  id: z.string().cuid("ID must be a valid CUID"),
-});
+export const trackerEntryIdSchema = zTrackerEntry.pick({ id: true });
 
-export const trackerEntryUserIdSchema = z.object({
-  userId: z.string().cuid("User ID must be a valid CUID"),
-});
+export const trackerEntryUserIdSchema = zUser.pick({ id: true });
 
 export const searchTrackerEntrySchema = z.object({
   q: z.string().min(1, "Search query must not be empty").optional(),
-  userId: z.string().cuid("User ID must be a valid CUID").optional(),
-  detailedEmotionId: z
-    .string()
-    .cuid("Detailed emotion ID must be a valid CUID")
-    .optional(),
+  userId: zUser.shape.id,
+  detailedEmotionId: zDetailedEmotion.shape.id.optional(),
 });
 
 export type TrackerEntryResponse = z.infer<typeof zTrackerEntry>;

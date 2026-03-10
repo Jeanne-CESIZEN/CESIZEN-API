@@ -5,12 +5,14 @@ import {
   validateParams,
   validateQuery,
 } from "@/middlewares/validationMiddleware";
+import { requireRole } from "@/middlewares/roleMiddleware";
 import {
   createCategorySchema,
   updateCategorySchema,
   categoryIdSchema,
   searchCategorySchema,
 } from "@/schemas/category";
+import { Role } from "@/generated/prisma";
 
 const router = Router();
 
@@ -34,6 +36,7 @@ router.get(
 // POST /api/categories
 router.post(
   "/",
+  requireRole(Role.ADMIN),
   validateBody(createCategorySchema),
   CategoryController.createCategory
 );

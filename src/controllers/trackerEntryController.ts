@@ -4,16 +4,31 @@ import {
   CreateTrackerEntryInput,
   UpdateTrackerEntryInput,
 } from "@/schemas/trackerEntry";
+import { Role } from "@/generated/prisma";
 
 type IdParams = { id: string };
 type UserIdParams = { userId: string };
+type AuthUser = { id: string; role: Role };
+
+const getAuthUser = (req: Request): AuthUser => {
+  return (req as any).authUser as AuthUser;
+};
 
 /**
  * POST /api/tracker-entries
  */
 export const createTrackerEntry = async (req: Request, res: Response) => {
   try {
-    const data = req.body as CreateTrackerEntryInput;
+    const authUser = getAuthUser(req);
+    let data = req.body as CreateTrackerEntryInput;
+
+    if (authUser.role !== Role.ADMIN) {
+      data = {
+        ...data,
+        userId: authUser.id,
+      };
+    }
+
     const trackerEntry = await TrackerEntryService.createTrackerEntry(data);
 
     res.status(201).json({
@@ -49,7 +64,11 @@ export const createTrackerEntry = async (req: Request, res: Response) => {
  */
 export const getAllTrackerEntries = async (req: Request, res: Response) => {
   try {
-    const trackerEntries = await TrackerEntryService.getAllTrackerEntries();
+    const authUser = getAuthUser(req);
+    const trackerEntries =
+      authUser.role === Role.ADMIN
+        ? await TrackerEntryService.getAllTrackerEntries()
+        : await TrackerEntryService.getTrackerEntriesByUser(authUser.id);
 
     res.status(200).json({
       success: true,
@@ -72,7 +91,16 @@ export const getTrackerEntriesByUser = async (
   res: Response
 ) => {
   try {
+    const authUser = getAuthUser(req);
     const { userId } = req.params;
+
+    if (authUser.role !== Role.ADMIN && userId !== authUser.id) {
+      return res.status(403).json({
+        success: false,
+        message: "Forbidden",
+      });
+    }
+
     const trackerEntries = await TrackerEntryService.getTrackerEntriesByUser(
       userId
     );
@@ -105,8 +133,16 @@ export const getTrackerEntryById = async (
   res: Response
 ) => {
   try {
+    const authUser = getAuthUser(req);
     const { id } = req.params;
     const trackerEntry = await TrackerEntryService.getTrackerEntryById(id);
+
+    if (authUser.role !== Role.ADMIN && trackerEntry.userId !== authUser.id) {
+      return res.status(403).json({
+        success: false,
+        message: "Forbidden",
+      });
+    }
 
     res.status(200).json({
       success: true,
@@ -135,8 +171,29 @@ export const updateTrackerEntry = async (
   res: Response
 ) => {
   try {
+    const authUser = getAuthUser(req);
     const { id } = req.params;
-    const data = req.body as UpdateTrackerEntryInput;
+    const existingTrackerEntry = await TrackerEntryService.getTrackerEntryById(id);
+
+    if (
+      authUser.role !== Role.ADMIN &&
+      existingTrackerEntry.userId !== authUser.id
+    ) {
+      return res.status(403).json({
+        success: false,
+        message: "Forbidden",
+      });
+    }
+
+    let data = req.body as UpdateTrackerEntryInput;
+
+    if (authUser.role !== Role.ADMIN) {
+      data = {
+        ...data,
+        userId: authUser.id,
+      };
+    }
+
     const trackerEntry = await TrackerEntryService.updateTrackerEntry(id, data);
 
     res.status(200).json({
@@ -182,7 +239,17 @@ export const deleteTrackerEntry = async (
   res: Response
 ) => {
   try {
+    const authUser = getAuthUser(req);
     const { id } = req.params;
+    const trackerEntry = await TrackerEntryService.getTrackerEntryById(id);
+
+    if (authUser.role !== Role.ADMIN && trackerEntry.userId !== authUser.id) {
+      return res.status(403).json({
+        success: false,
+        message: "Forbidden",
+      });
+    }
+
     await TrackerEntryService.deleteTrackerEntry(id);
 
     res.status(200).json({
@@ -209,9 +276,17 @@ export const deleteTrackerEntry = async (
  */
 export const searchTrackerEntries = async (req: Request, res: Response) => {
   try {
+    const authUser = getAuthUser(req);
     const filters = (req as any).validatedQuery || {};
+    const securedFilters =
+      authUser.role === Role.ADMIN
+        ? filters
+        : {
+            ...filters,
+            userId: authUser.id,
+          };
     const trackerEntries = await TrackerEntryService.searchTrackerEntries(
-      filters
+      securedFilters
     );
 
     res.status(200).json({

@@ -2,7 +2,7 @@ import { z } from "zod";
 import { Role } from "@/generated/prisma";
 
 export const zUser = z.object({
-  id: z.string().cuid("ID must be a valid CUID"),
+  id: z.cuid("ID must be a valid CUID"),
   firstname: z
     .string()
     .min(2, "First name must be at least 2 characters")
@@ -35,13 +35,11 @@ export const updateUserSchema = zUser
   })
   .partial();
 
-export const userIdSchema = z.object({
-  id: z.string().cuid("ID must be a valid CUID"),
-});
+export const userIdSchema = zUser.pick({ id: true });
 
 export const searchUserSchema = z.object({
   q: z.string().min(1, "Search query must not be empty").optional(),
-  role: z.nativeEnum(Role).optional(),
+  role: z.enum(Role).optional(),
   isActive: z
     .string()
     .transform((val) => val === "true")

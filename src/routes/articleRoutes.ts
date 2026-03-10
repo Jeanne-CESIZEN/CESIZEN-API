@@ -5,12 +5,14 @@ import {
   validateParams,
   validateQuery,
 } from "@/middlewares/validationMiddleware";
+import { requireRole } from "@/middlewares/roleMiddleware";
 import {
   createArticleSchema,
   updateArticleSchema,
   articleIdSchema,
   searchArticleSchema,
 } from "@/schemas/article";
+import { Role } from "@/generated/prisma";
 
 const router = Router();
 
@@ -34,6 +36,7 @@ router.get(
 // POST /api/articles
 router.post(
   "/",
+  requireRole(Role.ADMIN),
   validateBody(createArticleSchema),
   ArticleController.createArticle
 );
