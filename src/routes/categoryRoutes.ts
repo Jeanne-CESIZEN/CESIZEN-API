@@ -13,6 +13,7 @@ import {
   searchCategorySchema,
 } from "@/schemas/category";
 import { Role } from "@/generated/prisma";
+import { requireAuth } from "@/middlewares/authMiddleware";
 
 const router = Router();
 
@@ -32,6 +33,8 @@ router.get(
   validateParams(categoryIdSchema),
   CategoryController.getCategoryById
 );
+
+router.use(requireAuth);
 
 // POST /api/categories
 router.post(

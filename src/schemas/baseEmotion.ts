@@ -7,17 +7,25 @@ export const zBaseEmotion = z.object({
     .min(2, "Name must be at least 2 characters")
     .max(100, "Name must not exceed 100 characters")
     .trim(),
+  emoji: z
+    .string()
+    .min(1, "Emoji must not be empty")
+    .max(8, "Emoji must not exceed 8 characters")
+    .nullable()
+    .optional(),
   createdAt: z.date(),
   updatedAt: z.date(),
 });
 
 export const createBaseEmotionSchema = zBaseEmotion.pick({
   name: true,
+  emoji: true,
 });
 
 export const updateBaseEmotionSchema = zBaseEmotion
   .pick({
     name: true,
+    emoji: true,
   })
   .partial();
 

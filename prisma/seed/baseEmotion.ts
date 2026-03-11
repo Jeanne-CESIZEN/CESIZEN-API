@@ -2,12 +2,12 @@ import "dotenv/config";
 import { prisma } from "../../src/config/database.js";
 
 const BASE_EMOTIONS = [
-  "Joie",
-  "Colère",
-  "Peur",
-  "Tristesse",
-  "Surprise",
-  "Dégoût",
+  { name: "Joie", emoji: "😊" },
+  { name: "Colère", emoji: "😠" },
+  { name: "Peur", emoji: "😨" },
+  { name: "Tristesse", emoji: "😢" },
+  { name: "Surprise", emoji: "😮" },
+  { name: "Dégoût", emoji: "🤢" },
 ];
 
 export async function createBaseEmotions() {
@@ -19,12 +19,12 @@ export async function createBaseEmotions() {
 
   const existingNames = new Set(existingBaseEmotions.map((item) => item.name));
   const missingBaseEmotions = BASE_EMOTIONS.filter(
-    (name) => !existingNames.has(name)
+    (item) => !existingNames.has(item.name)
   );
 
   if (missingBaseEmotions.length > 0) {
     await prisma.baseEmotion.createMany({
-      data: missingBaseEmotions.map((name) => ({ name })),
+      data: missingBaseEmotions,
       skipDuplicates: true,
     });
   }

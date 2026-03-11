@@ -3,6 +3,10 @@ import { z } from "zod";
 export const zCategory = z.object({
   id: z.cuid("ID must be a valid CUID"),
   name: z.string().min(2, "Name must be at least 2 characters"),
+  color: z
+    .string()
+    .regex(/^#([0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/, "Color must be a hex value"),
+  iconName: z.string().min(1, "Icon name is required"),
   description: z
     .string()
     .max(500, "Description must not exceed 500 characters")
@@ -13,12 +17,16 @@ export const zCategory = z.object({
 
 export const createCategorySchema = zCategory.pick({
   name: true,
+  color: true,
+  iconName: true,
   description: true,
 });
 
 export const updateCategorySchema = zCategory
   .pick({
     name: true,
+    color: true,
+    iconName: true,
     description: true,
   })
   .partial();
