@@ -31,6 +31,8 @@ export const USER_WITH_PASSWORD_SELECT: Prisma.UserSelect = {
 export const CATEGORY_SELECT: Prisma.CategorySelect = {
   id: true,
   name: true,
+  color: true,
+  iconName: true,
   description: true,
   createdAt: true,
   updatedAt: true,
@@ -58,6 +60,7 @@ export const ARTICLE_SELECT: Prisma.ArticleSelect = {
 export const BASE_EMOTION_SELECT: Prisma.BaseEmotionSelect = {
   id: true,
   name: true,
+  emoji: true,
   createdAt: true,
   updatedAt: true,
 };

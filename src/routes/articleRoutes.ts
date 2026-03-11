@@ -5,6 +5,7 @@ import {
   validateParams,
   validateQuery,
 } from "@/middlewares/validationMiddleware";
+import { requireAuth } from "@/middlewares/authMiddleware";
 import { requireRole } from "@/middlewares/roleMiddleware";
 import {
   createArticleSchema,
@@ -32,6 +33,8 @@ router.get(
   validateParams(articleIdSchema),
   ArticleController.getArticleById
 );
+
+router.use(requireAuth);
 
 // POST /api/articles
 router.post(

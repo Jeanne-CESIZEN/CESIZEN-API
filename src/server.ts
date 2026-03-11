@@ -14,8 +14,8 @@ app.use(express.json());
 
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
-app.use("/api/categories", requireAuth, categoryRoutes);
-app.use("/api/articles", requireAuth, articleRoutes);
+app.use("/api/categories", categoryRoutes);
+app.use("/api/articles", articleRoutes);
 app.use("/api/base-emotions", requireAuth, baseEmotionRoutes);
 app.use("/api/detailed-emotions", requireAuth, detailedEmotionRoutes);
 app.use("/api/tracker-entries", requireAuth, trackerEntryRoutes);
