@@ -12,6 +12,7 @@ import {
   trackerEntryUserIdSchema,
   searchTrackerEntrySchema,
 } from "@/schemas/trackerEntry";
+import { trackerStatsQuerySchema } from "@/schemas/trackerStats";
 
 const router = Router();
 
@@ -23,6 +24,13 @@ router.get(
   "/search",
   validateQuery(searchTrackerEntrySchema),
   TrackerEntryController.searchTrackerEntries
+);
+
+// GET /api/tracker-entries/stats?period=7&userId=<cuid>
+router.get(
+  "/stats",
+  validateQuery(trackerStatsQuerySchema),
+  TrackerEntryController.getTrackerStats
 );
 
 // GET /api/tracker-entries/user/:userId

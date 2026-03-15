@@ -84,6 +84,9 @@ model BaseEmotion {
   id        String   @id @default(cuid())
   name      String   @unique
   emoji     String?
+  color     String?
+  score     Int      @default(3)
+  order     Int      @default(0)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
