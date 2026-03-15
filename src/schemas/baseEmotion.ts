@@ -13,6 +13,21 @@ export const zBaseEmotion = z.object({
     .max(8, "Emoji must not exceed 8 characters")
     .nullable()
     .optional(),
+  color: z
+    .string()
+    .min(3, "Color must not be empty")
+    .max(20, "Color must not exceed 20 characters")
+    .nullable()
+    .optional(),
+  score: z
+    .number()
+    .int("Score must be an integer")
+    .min(1, "Score must be at least 1")
+    .max(5, "Score must not exceed 5"),
+  order: z
+    .number()
+    .int("Order must be an integer")
+    .min(0, "Order must be at least 0"),
   createdAt: z.date(),
   updatedAt: z.date(),
 });
@@ -20,12 +35,18 @@ export const zBaseEmotion = z.object({
 export const createBaseEmotionSchema = zBaseEmotion.pick({
   name: true,
   emoji: true,
+  color: true,
+  score: true,
+  order: true,
 });
 
 export const updateBaseEmotionSchema = zBaseEmotion
   .pick({
     name: true,
     emoji: true,
+    color: true,
+    score: true,
+    order: true,
   })
   .partial();
 

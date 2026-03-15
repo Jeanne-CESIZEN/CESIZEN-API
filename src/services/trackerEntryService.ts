@@ -43,7 +43,9 @@ export const createTrackerEntry = async (
   });
 };
 
-export const getAllTrackerEntries = async (): Promise<TrackerEntryResponse[]> => {
+export const getAllTrackerEntries = async (): Promise<
+  TrackerEntryResponse[]
+> => {
   return await prisma.trackerEntry.findMany({
     select: TRACKER_ENTRY_SELECT,
     orderBy: { createdAt: "desc" },
@@ -151,3 +153,5 @@ export const searchTrackerEntries = async (
     orderBy: { createdAt: "desc" },
   });
 };
+
+export { getTrackerStats } from "./trackerStatsService";

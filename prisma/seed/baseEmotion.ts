@@ -2,12 +2,12 @@ import "dotenv/config";
 import { prisma } from "../../src/config/database.js";
 
 const BASE_EMOTIONS = [
-  { name: "Joie", emoji: "😊" },
-  { name: "Colère", emoji: "😠" },
-  { name: "Peur", emoji: "😨" },
-  { name: "Tristesse", emoji: "😢" },
-  { name: "Surprise", emoji: "😮" },
-  { name: "Dégoût", emoji: "🤢" },
+  { name: "Joie", emoji: "😊", color: "#FBBF24", score: 5, order: 1 },
+  { name: "Colère", emoji: "😠", color: "#EF4444", score: 2, order: 2 },
+  { name: "Peur", emoji: "😨", color: "#8B5CF6", score: 2, order: 3 },
+  { name: "Tristesse", emoji: "😢", color: "#3B82F6", score: 1, order: 4 },
+  { name: "Surprise", emoji: "😮", color: "#F59E0B", score: 4, order: 5 },
+  { name: "Dégoût", emoji: "🤢", color: "#6B7280", score: 1, order: 6 },
 ];
 
 export async function createBaseEmotions() {

@@ -4,6 +4,10 @@ import {
   CreateTrackerEntryInput,
   UpdateTrackerEntryInput,
 } from "@/schemas/trackerEntry";
+import {
+  DEFAULT_TRACKER_STATS_PERIOD,
+  TrackerStatsQuery,
+} from "@/schemas/trackerStats";
 import { Role } from "@/generated/prisma";
 
 type IdParams = { id: string };
@@ -173,7 +177,9 @@ export const updateTrackerEntry = async (
   try {
     const authUser = getAuthUser(req);
     const { id } = req.params;
-    const existingTrackerEntry = await TrackerEntryService.getTrackerEntryById(id);
+    const existingTrackerEntry = await TrackerEntryService.getTrackerEntryById(
+      id
+    );
 
     if (
       authUser.role !== Role.ADMIN &&
@@ -298,6 +304,32 @@ export const searchTrackerEntries = async (req: Request, res: Response) => {
     res.status(500).json({
       success: false,
       message: "Error searching tracker entries",
+    });
+  }
+};
+
+/**
+ * GET /api/tracker-entries/stats?period=7&userId=<cuid>
+ */
+export const getTrackerStats = async (req: Request, res: Response) => {
+  try {
+    const authUser = getAuthUser(req);
+    const filters = (req as any).validatedQuery as TrackerStatsQuery;
+    const userId =
+      authUser.role === Role.ADMIN && filters.userId
+        ? filters.userId
+        : authUser.id;
+    const period = filters.period ?? DEFAULT_TRACKER_STATS_PERIOD;
+    const stats = await TrackerEntryService.getTrackerStats(userId, period);
+
+    res.status(200).json({
+      success: true,
+      data: stats,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Error retrieving tracker stats",
     });
   }
 };
