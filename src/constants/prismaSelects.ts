@@ -48,7 +48,6 @@ export const ARTICLE_SELECT: Prisma.ArticleSelect = {
   title: true,
   description: true,
   content: true,
-  imagePath: true,
   createdAt: true,
   updatedAt: true,
 };
