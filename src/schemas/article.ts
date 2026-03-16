@@ -10,7 +10,6 @@ export const zArticle = z.object({
     .max(500, "Description must not exceed 500 characters")
     .optional(),
   content: z.string().min(1, "Content is required"),
-  imagePath: z.string().optional(),
   createdAt: z.date(),
   updatedAt: z.date(),
 });
@@ -20,7 +19,6 @@ export const createArticleSchema = zArticle.pick({
   title: true,
   description: true,
   content: true,
-  imagePath: true,
 });
 
 export const updateArticleSchema = zArticle
@@ -29,7 +27,6 @@ export const updateArticleSchema = zArticle
     title: true,
     description: true,
     content: true,
-    imagePath: true,
   })
   .partial();
 
