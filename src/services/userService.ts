@@ -22,10 +22,13 @@ export const createUser = async (
 
   const hashedPassword = await hashPassword(data.password);
 
+  const { gdprAccepted, ...userData } = data;
+
   const user = await prisma.user.create({
     data: {
-      ...data,
+      ...userData,
       password: hashedPassword,
+      ...(gdprAccepted ? { gdprAcceptedAt: new Date() } : {}),
     },
     select: USER_SELECT,
   });
@@ -171,6 +174,23 @@ export const activateUser = async (id: string): Promise<UserResponse> => {
   return await prisma.user.update({
     where: { id },
     data: { isActive: true },
+    select: USER_SELECT,
+  });
+};
+
+export const acceptGdpr = async (id: string): Promise<UserResponse> => {
+  const user = await prisma.user.findUnique({
+    where: { id },
+    select: USER_SELECT,
+  });
+
+  if (!user) {
+    throw new Error("USER_NOT_FOUND");
+  }
+
+  return await prisma.user.update({
+    where: { id },
+    data: { gdprAcceptedAt: new Date() },
     select: USER_SELECT,
   });
 };

@@ -12,17 +12,22 @@ export const zUser = z.object({
   password: z.string().min(8, "Password must be at least 8 characters"),
   role: z.enum(Role).default(Role.USER),
   isActive: z.boolean().default(true),
+  gdprAcceptedAt: z.date().nullable().optional(),
   createdAt: z.date(),
   updatedAt: z.date(),
 });
 
-export const createUserSchema = zUser.pick({
-  firstname: true,
-  lastname: true,
-  email: true,
-  password: true,
-  role: true,
-});
+export const createUserSchema = zUser
+  .pick({
+    firstname: true,
+    lastname: true,
+    email: true,
+    password: true,
+    role: true,
+  })
+  .extend({
+    gdprAccepted: z.boolean().optional().default(false),
+  });
 
 export const updateUserSchema = zUser
   .pick({

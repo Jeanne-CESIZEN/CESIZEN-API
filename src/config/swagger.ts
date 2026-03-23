@@ -55,6 +55,7 @@ const swaggerDocument: OpenAPIV3.Document = {
           email: { type: "string", format: "email", example: "alice@example.com" },
           role: { type: "string", enum: ["USER", "ADMIN"], example: "USER" },
           isActive: { type: "boolean", example: true },
+          gdprAcceptedAt: { type: "string", format: "date-time", nullable: true, example: "2026-03-23T10:00:00.000Z" },
           createdAt: { type: "string", format: "date-time" },
           updatedAt: { type: "string", format: "date-time" },
         },
@@ -68,6 +69,7 @@ const swaggerDocument: OpenAPIV3.Document = {
           email: { type: "string", format: "email", example: "alice@example.com" },
           password: { type: "string", minLength: 8, example: "P@ssw0rd!" },
           role: { type: "string", enum: ["USER", "ADMIN"], default: "USER" },
+          gdprAccepted: { type: "boolean", default: false, description: "Indique si l'utilisateur accepte le RGPD au moment de l'inscription" },
         },
       },
       UpdateUserRequest: {
@@ -503,6 +505,21 @@ const swaggerDocument: OpenAPIV3.Document = {
         parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }],
         responses: {
           "200": { description: "Utilisateur activé", content: { "application/json": { schema: { $ref: "#/components/schemas/User" } } } },
+          "404": { description: "Non trouvé", content: { "application/json": { schema: { $ref: "#/components/schemas/ErrorResponse" } } } },
+        },
+      },
+    },
+    "/api/users/{id}/gdpr": {
+      patch: {
+        tags: ["Users"],
+        summary: "Accepter le RGPD",
+        description: "Enregistre la date d'acceptation du RGPD pour l'utilisateur authentifié. Un utilisateur ne peut mettre à jour que son propre consentement.",
+        security: [{ bearerAuth: [] }],
+        parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }],
+        responses: {
+          "200": { description: "Consentement RGPD enregistré", content: { "application/json": { schema: { $ref: "#/components/schemas/User" } } } },
+          "401": { description: "Non authentifié", content: { "application/json": { schema: { $ref: "#/components/schemas/ErrorResponse" } } } },
+          "403": { description: "Accès refusé (autre utilisateur)", content: { "application/json": { schema: { $ref: "#/components/schemas/ErrorResponse" } } } },
           "404": { description: "Non trouvé", content: { "application/json": { schema: { $ref: "#/components/schemas/ErrorResponse" } } } },
         },
       },
