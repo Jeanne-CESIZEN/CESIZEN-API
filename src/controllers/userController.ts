@@ -205,6 +205,42 @@ export const activateUser = async (req: Request<IdParams>, res: Response) => {
 };
 
 /**
+ * PATCH /api/users/:id/gdpr
+ */
+export const acceptGdpr = async (req: Request<IdParams>, res: Response) => {
+  try {
+    const { id } = req.params;
+    const authUser = (req as any).authUser;
+
+    if (authUser.id !== id) {
+      return res.status(403).json({
+        success: false,
+        message: "You can only update your own GDPR consent",
+      });
+    }
+
+    const user = await UserService.acceptGdpr(id);
+
+    res.status(200).json({
+      success: true,
+      data: user,
+    });
+  } catch (error: any) {
+    if (error.message === "USER_NOT_FOUND") {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    res.status(500).json({
+      success: false,
+      message: "Error updating GDPR consent",
+    });
+  }
+};
+
+/**
  * DELETE /api/users/:id
  */
 export const deleteUser = async (req: Request<IdParams>, res: Response) => {

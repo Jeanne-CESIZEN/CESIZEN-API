@@ -11,6 +11,7 @@ export const USER_SELECT: Prisma.UserSelect = {
   email: true,
   role: true,
   isActive: true,
+  gdprAcceptedAt: true,
   createdAt: true,
   updatedAt: true,
 };

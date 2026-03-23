@@ -11,6 +11,7 @@ import {
   userIdSchema,
   searchUserSchema,
 } from "@/schemas/user";
+import { requireAuth } from "@/middlewares/authMiddleware";
 
 const router = Router();
 
@@ -39,6 +40,14 @@ router.put(
   validateParams(userIdSchema),
   validateBody(updateUserSchema),
   UserController.updateUser
+);
+
+// PATCH /api/users/:id/gdpr
+router.patch(
+  "/:id/gdpr",
+  requireAuth,
+  validateParams(userIdSchema),
+  UserController.acceptGdpr
 );
 
 // PATCH /api/users/:id/deactivate
