@@ -12,6 +12,8 @@ import {
   searchUserSchema,
 } from "@/schemas/user";
 import { requireAuth } from "@/middlewares/authMiddleware";
+import { requireRole, requireAdminOrSelf } from "@/middlewares/roleMiddleware";
+import { Role } from "@/generated/prisma";
 
 const router = Router();
 
@@ -34,9 +36,11 @@ router.get("/:id", validateParams(userIdSchema), UserController.getUserById);
 // POST /api/users
 router.post("/", validateBody(createUserSchema), UserController.createUser);
 
-// PUT /api/users/:id
+// PUT /api/users/:id - admin or self
 router.put(
   "/:id",
+  requireAuth,
+  requireAdminOrSelf,
   validateParams(userIdSchema),
   validateBody(updateUserSchema),
   UserController.updateUser
@@ -53,6 +57,8 @@ router.patch(
 // PATCH /api/users/:id/deactivate
 router.patch(
   "/:id/deactivate",
+  requireAuth,
+  requireRole(Role.ADMIN),
   validateParams(userIdSchema),
   UserController.deactivateUser
 );
@@ -60,11 +66,19 @@ router.patch(
 // PATCH /api/users/:id/activate
 router.patch(
   "/:id/activate",
+  requireAuth,
+  requireRole(Role.ADMIN),
   validateParams(userIdSchema),
   UserController.activateUser
 );
 
 // DELETE /api/users/:id
-router.delete("/:id", validateParams(userIdSchema), UserController.deleteUser);
+router.delete(
+  "/:id",
+  requireAuth,
+  requireRole(Role.ADMIN),
+  validateParams(userIdSchema),
+  UserController.deleteUser
+);
 
 export default router;
