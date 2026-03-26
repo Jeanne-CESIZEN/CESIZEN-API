@@ -32,7 +32,7 @@ export const updateTrackerEntrySchema = zTrackerEntry
 
 export const trackerEntryIdSchema = zTrackerEntry.pick({ id: true });
 
-export const trackerEntryUserIdSchema = zUser.pick({ id: true });
+export const trackerEntryUserIdSchema = z.object({ userId: zUser.shape.id });
 
 export const searchTrackerEntrySchema = z.object({
   q: z.string().min(1, "Search query must not be empty").optional(),
