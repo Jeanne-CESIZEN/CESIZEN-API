@@ -111,7 +111,6 @@ export const searchArticles = async (
               OR: [
                 { title: { contains: q, mode: "insensitive" } },
                 { description: { contains: q, mode: "insensitive" } },
-                { content: { contains: q, mode: "insensitive" } },
               ],
             }
           : {},
