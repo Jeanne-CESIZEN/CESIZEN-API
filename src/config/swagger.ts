@@ -263,11 +263,10 @@ const swaggerDocument: OpenAPIV3.Document = {
                   count: { type: "integer" },
                 },
               },
-              trend: {
+              streak: {
                 type: "object",
                 properties: {
-                  direction: { type: "string", enum: ["up", "down", "stable"] },
-                  percent: { type: "number" },
+                  days: { type: "integer" },
                 },
               },
             },

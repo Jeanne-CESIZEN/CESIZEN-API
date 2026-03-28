@@ -8,13 +8,9 @@ import {
   TrackerStatsEmotionCatalog,
   TrackerStatsEmotionCountMap,
   TrackerStatsResponse,
-  TrackerStatsTrend,
 } from "@/schemas/trackerStats";
 
 dayjs.locale("fr");
-
-const MAX_MOOD_SCORE = 5;
-const STABLE_TREND_THRESHOLD = 0.1;
 
 const getStartOfDay = (date: Date) => dayjs(date).startOf("day").toDate();
 const shiftDateByDays = (date: Date, days: number) =>
@@ -70,16 +66,11 @@ const fetchCurrentPeriodEntries = async (
   });
 };
 
-const fetchPreviousPeriodEntries = async (
-  userId: string,
-  startDate: Date,
-  endDate: Date
-) => {
+const fetchAllEntryDates = async (userId: string) => {
   return await prisma.trackerEntry.findMany({
-    where: { userId, createdAt: { gte: startDate, lt: endDate } },
-    select: {
-      detailedEmotion: { select: { baseEmotion: { select: { name: true } } } },
-    },
+    where: { userId },
+    select: { createdAt: true },
+    orderBy: { createdAt: "desc" },
   });
 };
 
@@ -189,48 +180,22 @@ const getTotalEntryCount = (emotionCounts: TrackerStatsEmotionCountMap) => {
   );
 };
 
-const computeTrend = (
-  currentAverageScore: number,
-  previousAverageScore: number
-): TrackerStatsTrend => {
-  const scoreDifference = currentAverageScore - previousAverageScore;
-  const percent = Math.min(
-    100,
-    Math.round((Math.abs(scoreDifference) / MAX_MOOD_SCORE) * 100)
+const computeStreak = (
+  allEntries: Awaited<ReturnType<typeof fetchAllEntryDates>>
+): number => {
+  const entryDateSet = new Set(
+    allEntries.map((entry) => formatDateKey(entry.createdAt))
   );
 
-  if (scoreDifference > STABLE_TREND_THRESHOLD) {
-    return { direction: "up", percent };
+  let streak = 0;
+  let current = dayjs().startOf("day");
+
+  while (entryDateSet.has(current.format("YYYY-MM-DD"))) {
+    streak++;
+    current = current.subtract(1, "day");
   }
 
-  if (scoreDifference < -STABLE_TREND_THRESHOLD) {
-    return { direction: "down", percent };
-  }
-
-  return { direction: "stable", percent };
-};
-
-const computePreviousPeriodAverageScore = (
-  previousPeriodEntries: Awaited<ReturnType<typeof fetchPreviousPeriodEntries>>,
-  emotionCatalog: TrackerStatsEmotionCatalog
-) => {
-  const summary = previousPeriodEntries.reduce(
-    (totals, entry) => {
-      const baseEmotionName = entry.detailedEmotion.baseEmotion.name;
-      const emotion = emotionCatalog.byName[baseEmotionName];
-
-      if (!emotion) {
-        return totals;
-      }
-
-      totals.scoreSum += emotion.score;
-      totals.entryCount += 1;
-      return totals;
-    },
-    { scoreSum: 0, entryCount: 0 }
-  );
-
-  return computeAverageScore(summary.scoreSum, summary.entryCount);
+  return streak;
 };
 
 export const getTrackerStats = async (
@@ -240,18 +205,12 @@ export const getTrackerStats = async (
   const today = getStartOfDay(new Date());
   const currentPeriodStart = shiftDateByDays(today, -(periodDays - 1));
   const currentPeriodEnd = shiftDateByDays(today, 1);
-  const previousPeriodStart = shiftDateByDays(currentPeriodStart, -periodDays);
-  const previousPeriodEnd = currentPeriodStart;
 
-  const [baseEmotions, currentPeriodEntries, previousPeriodEntries] =
+  const [baseEmotions, currentPeriodEntries, allEntryDates] =
     await Promise.all([
       fetchBaseEmotions(),
       fetchCurrentPeriodEntries(userId, currentPeriodStart, currentPeriodEnd),
-      fetchPreviousPeriodEntries(
-        userId,
-        previousPeriodStart,
-        previousPeriodEnd
-      ),
+      fetchAllEntryDates(userId),
     ]);
 
   const emotionCatalog = buildEmotionCatalog(baseEmotions);
@@ -299,10 +258,6 @@ export const getTrackerStats = async (
     currentPeriodScoreSum,
     totalEntries
   );
-  const previousAverageScore = computePreviousPeriodAverageScore(
-    previousPeriodEntries,
-    emotionCatalog
-  );
 
   const timeline = dailyAccumulators.map((dailyAccumulator) => ({
     date: dailyAccumulator.date,
@@ -323,7 +278,7 @@ export const getTrackerStats = async (
         score: currentAverageScore,
         count: totalEntries,
       },
-      trend: computeTrend(currentAverageScore, previousAverageScore),
+      streak: { days: computeStreak(allEntryDates) },
     },
     emotions: emotionCatalog.emotions,
     distribution: buildDistribution(emotionCounts, totalEntries),

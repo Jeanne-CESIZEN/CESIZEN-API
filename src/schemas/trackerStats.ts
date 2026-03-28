@@ -42,9 +42,8 @@ export const trackerStatsAverageMoodSchema = z.object({
   count: z.number().int().nonnegative(),
 });
 
-export const trackerStatsTrendSchema = z.object({
-  direction: z.enum(["up", "down", "stable"]),
-  percent: z.number().nonnegative(),
+export const trackerStatsStreakSchema = z.object({
+  days: z.number().int().nonnegative(),
 });
 
 export const trackerStatsDistributionItemSchema = z.object({
@@ -69,7 +68,7 @@ export const trackerStatsTimelinePointSchema = z.object({
 export const trackerStatsSummarySchema = z.object({
   dominantEmotion: trackerStatsDominantEmotionSchema.nullable(),
   averageMood: trackerStatsAverageMoodSchema,
-  trend: trackerStatsTrendSchema,
+  streak: trackerStatsStreakSchema,
 });
 
 export const trackerStatsResponseSchema = z.object({
@@ -118,7 +117,7 @@ export const trackerStatsDailyAccumulatorSchema = z.object({
 
 export type TrackerStatsQuery = z.infer<typeof trackerStatsQuerySchema>;
 export type TrackerStatsResponse = z.infer<typeof trackerStatsResponseSchema>;
-export type TrackerStatsTrend = z.infer<typeof trackerStatsTrendSchema>;
+export type TrackerStatsStreak = z.infer<typeof trackerStatsStreakSchema>;
 export type TrackerStatsDailyAccumulator = z.infer<
   typeof trackerStatsDailyAccumulatorSchema
 >;
