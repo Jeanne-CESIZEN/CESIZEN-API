@@ -156,20 +156,18 @@ const swaggerDocument: OpenAPIV3.Document = {
           emoji: { type: "string", nullable: true, example: "😀" },
           color: { type: "string", nullable: true, example: "#FFD700" },
           score: { type: "integer", minimum: 1, maximum: 5, example: 5 },
-          order: { type: "integer", minimum: 0, example: 0 },
           createdAt: { type: "string", format: "date-time" },
           updatedAt: { type: "string", format: "date-time" },
         },
       },
       CreateBaseEmotionRequest: {
         type: "object",
-        required: ["name", "score", "order"],
+        required: ["name", "score"],
         properties: {
           name: { type: "string", minLength: 2, maxLength: 100, example: "Joie" },
           emoji: { type: "string", nullable: true, example: "😀" },
           color: { type: "string", nullable: true, example: "#FFD700" },
           score: { type: "integer", minimum: 1, maximum: 5, example: 5 },
-          order: { type: "integer", minimum: 0, example: 0 },
         },
       },
       UpdateBaseEmotionRequest: {
@@ -179,7 +177,6 @@ const swaggerDocument: OpenAPIV3.Document = {
           emoji: { type: "string", nullable: true },
           color: { type: "string", nullable: true },
           score: { type: "integer", minimum: 1, maximum: 5 },
-          order: { type: "integer", minimum: 0 },
         },
       },
       // ─── DetailedEmotion ──────────────────────────────────────────────────

@@ -86,7 +86,6 @@ model BaseEmotion {
   emoji     String?
   color     String?
   score     Int      @default(3)
-  order     Int      @default(0)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
