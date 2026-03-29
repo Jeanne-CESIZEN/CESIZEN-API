@@ -63,7 +63,6 @@ export const BASE_EMOTION_SELECT: Prisma.BaseEmotionSelect = {
   emoji: true,
   color: true,
   score: true,
-  order: true,
   createdAt: true,
   updatedAt: true,
 };

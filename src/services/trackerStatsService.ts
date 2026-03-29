@@ -46,8 +46,8 @@ const toUniqueEmotionKey = (
 
 const fetchBaseEmotions = async () => {
   return await prisma.baseEmotion.findMany({
-    select: { name: true, emoji: true, color: true, score: true, order: true },
-    orderBy: [{ order: "asc" }, { name: "asc" }],
+    select: { name: true, emoji: true, color: true, score: true },
+    orderBy: { name: "asc" },
   });
 };
 

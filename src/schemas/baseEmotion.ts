@@ -24,10 +24,6 @@ export const zBaseEmotion = z.object({
     .int("Score must be an integer")
     .min(1, "Score must be at least 1")
     .max(5, "Score must not exceed 5"),
-  order: z
-    .number()
-    .int("Order must be an integer")
-    .min(0, "Order must be at least 0"),
   createdAt: z.date(),
   updatedAt: z.date(),
 });
@@ -37,7 +33,6 @@ export const createBaseEmotionSchema = zBaseEmotion.pick({
   emoji: true,
   color: true,
   score: true,
-  order: true,
 });
 
 export const updateBaseEmotionSchema = zBaseEmotion
@@ -46,7 +41,6 @@ export const updateBaseEmotionSchema = zBaseEmotion
     emoji: true,
     color: true,
     score: true,
-    order: true,
   })
   .partial();
 
