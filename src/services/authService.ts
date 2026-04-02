@@ -1,11 +1,15 @@
-import bcrypt from "bcrypt";
+import argon2 from "argon2";
 import crypto from "crypto";
 import jwt from "jsonwebtoken";
 import { prisma } from "@/config/database";
 import { authConfig } from "@/config/auth";
-import { USER_SELECT, USER_WITH_PASSWORD_SELECT } from "@/constants/prismaSelects";
+import {
+  USER_SELECT,
+  USER_WITH_PASSWORD_SELECT,
+} from "@/constants/prismaSelects";
 import { LoginInput, RefreshTokenInput } from "@/schemas/auth";
 import { UserResponse } from "@/schemas/user";
+import { comparePassword } from "@/utils/hashPassword";
 
 type TokenPair = {
   accessToken: string;
@@ -22,8 +26,19 @@ type AuthUserForTokens = UserResponse & {
   tokenVersion: number;
 };
 
-const hashRefreshTokenBcrypt = async (token: string): Promise<string> => {
-  return await bcrypt.hash(token, 10);
+const hashRefreshToken = async (token: string): Promise<string> => {
+  return await argon2.hash(token);
+};
+
+const verifyRefreshToken = async (
+  token: string,
+  hash: string
+): Promise<boolean> => {
+  if (!hash.startsWith("$argon2")) {
+    return false;
+  }
+
+  return await argon2.verify(hash, token);
 };
 
 const issueTokenPair = async (user: AuthUserForTokens): Promise<TokenPair> => {
@@ -56,7 +71,7 @@ const issueTokenPair = async (user: AuthUserForTokens): Promise<TokenPair> => {
       data: {
         id: tokenId,
         userId: user.id,
-        tokenHash: await hashRefreshTokenBcrypt(refreshToken),
+        tokenHash: await hashRefreshToken(refreshToken),
         expiresAt: new Date(
           Date.now() + authConfig.refreshTokenTtlSeconds * 1000
         ),
@@ -91,7 +106,7 @@ export const login = async (data: LoginInput): Promise<AuthLoginResponse> => {
     throw new Error("USER_INACTIVE");
   }
 
-  const isValidPassword = await bcrypt.compare(
+  const isValidPassword = await comparePassword(
     data.password,
     userWithPassword.password
   );
@@ -118,7 +133,10 @@ export const refresh = async (
   let payload: jwt.JwtPayload;
 
   try {
-    const decoded = jwt.verify(data.refreshToken, authConfig.refreshTokenSecret);
+    const decoded = jwt.verify(
+      data.refreshToken,
+      authConfig.refreshTokenSecret
+    );
     if (typeof decoded === "string") {
       throw new Error("INVALID_REFRESH_TOKEN");
     }
@@ -145,7 +163,7 @@ export const refresh = async (
     throw new Error("INVALID_REFRESH_TOKEN");
   }
 
-  const isValidRefreshToken = await bcrypt.compare(
+  const isValidRefreshToken = await verifyRefreshToken(
     data.refreshToken,
     storedToken.tokenHash
   );
@@ -198,7 +216,10 @@ export const refresh = async (
 
 export const logout = async (data: RefreshTokenInput): Promise<void> => {
   try {
-    const decoded = jwt.verify(data.refreshToken, authConfig.refreshTokenSecret);
+    const decoded = jwt.verify(
+      data.refreshToken,
+      authConfig.refreshTokenSecret
+    );
     if (typeof decoded === "string") {
       return;
     }
@@ -218,7 +239,7 @@ export const logout = async (data: RefreshTokenInput): Promise<void> => {
       return;
     }
 
-    const isValidRefreshToken = await bcrypt.compare(
+    const isValidRefreshToken = await verifyRefreshToken(
       data.refreshToken,
       storedToken.tokenHash
     );

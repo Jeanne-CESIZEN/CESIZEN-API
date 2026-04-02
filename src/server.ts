@@ -1,4 +1,5 @@
 import express from "express";
+import cookieParser from "cookie-parser";
 import swaggerUi from "swagger-ui-express";
 import userRoutes from "@/routes/userRoutes";
 import categoryRoutes from "@/routes/categoryRoutes";
@@ -13,8 +14,13 @@ import cors from "cors";
 
 const app = express();
 
-app.use(cors({ origin: "http://localhost:5173" }));
+app.use(cors({
+  origin: "http://localhost:5173",
+  credentials: true,
+  allowedHeaders: ["Content-Type", "Authorization", "X-Client-Type"],
+}));
 
+app.use(cookieParser());
 app.use(express.json());
 
 app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));

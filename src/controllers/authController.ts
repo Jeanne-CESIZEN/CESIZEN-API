@@ -1,6 +1,27 @@
 import { Request, Response } from "express";
 import * as AuthService from "@/services/authService";
-import { LoginInput, RefreshTokenInput } from "@/schemas/auth";
+import { authConfig } from "@/config/auth";
+import { LoginInput } from "@/schemas/auth";
+
+const REFRESH_COOKIE = "refreshToken";
+
+const refreshCookieOptions = {
+  httpOnly: true,
+  sameSite: "strict" as const,
+  secure: process.env.NODE_ENV === "production",
+  maxAge: authConfig.refreshTokenTtlSeconds * 1000,
+};
+
+function isMobileClient(req: Request): boolean {
+  return req.headers["x-client-type"] === "mobile";
+}
+
+function resolveRefreshToken(req: Request): string | undefined {
+  if (isMobileClient(req)) {
+    return req.body?.refreshToken;
+  }
+  return req.cookies?.[REFRESH_COOKIE] as string | undefined;
+}
 
 /**
  * POST /api/auth/login
@@ -9,10 +30,17 @@ export const login = async (req: Request, res: Response) => {
   try {
     const data = req.body as LoginInput;
     const result = await AuthService.login(data);
+    const mobile = isMobileClient(req);
+
+    if (!mobile) {
+      res.cookie(REFRESH_COOKIE, result.refreshToken, refreshCookieOptions);
+    }
+
+    const { refreshToken, ...responseData } = result;
 
     res.status(200).json({
       success: true,
-      data: result,
+      data: mobile ? result : responseData,
     });
   } catch (error) {
     if (error instanceof Error) {
@@ -51,12 +79,27 @@ export const login = async (req: Request, res: Response) => {
  */
 export const refresh = async (req: Request, res: Response) => {
   try {
-    const data = req.body as RefreshTokenInput;
-    const result = await AuthService.refresh(data);
+    const refreshToken = resolveRefreshToken(req);
+
+    if (!refreshToken) {
+      return res.status(401).json({
+        success: false,
+        message: "Missing refresh token",
+      });
+    }
+
+    const result = await AuthService.refresh({ refreshToken });
+    const mobile = isMobileClient(req);
+
+    if (!mobile) {
+      res.cookie(REFRESH_COOKIE, result.refreshToken, refreshCookieOptions);
+    }
+
+    const { refreshToken: _, ...responseData } = result;
 
     res.status(200).json({
       success: true,
-      data: result,
+      data: mobile ? result : responseData,
     });
   } catch (error) {
     if (error instanceof Error) {
@@ -94,8 +137,17 @@ export const refresh = async (req: Request, res: Response) => {
  */
 export const logout = async (req: Request, res: Response) => {
   try {
-    const data = req.body as RefreshTokenInput;
-    await AuthService.logout(data);
+    const refreshToken = resolveRefreshToken(req);
+
+    if (refreshToken) {
+      await AuthService.logout({ refreshToken });
+    }
+
+    res.clearCookie(REFRESH_COOKIE, {
+      httpOnly: true,
+      sameSite: "strict",
+      secure: process.env.NODE_ENV === "production",
+    });
 
     res.status(200).json({
       success: true,
