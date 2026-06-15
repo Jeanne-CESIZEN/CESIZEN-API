@@ -1,0 +1,67 @@
+name: CI - API
+
+# Pipeline back-end :
+#  - PR vers main          : typecheck + tests unitaires + scan dépendances
+#  - Push sur main         : idem (le build/push image + déploiement arriveront en Phase 2)
+#  - Déclenchement manuel  : workflow_dispatch
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Annule un run précédent encore en cours sur la même réf (économise les runners)
+concurrency:
+  group: ci-api-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ─── Typecheck + tests unitaires (Vitest, Prisma mocké) ─────────────────────
+  test:
+    name: Typecheck & tests unitaires
+    runs-on: ubuntu-latest
+
+    # DATABASE_URL factice : les tests mockent Prisma (vi.mock), aucune base n'est
+    # contactée. La variable sert uniquement au chargement de prisma.config.ts.
+    env:
+      DATABASE_URL: "postgresql://user:password@localhost:5432/cesizen_test?schema=public"
+
+    steps:
+      - name: Checkout du code
+        uses: actions/checkout@v4
+
+      - name: Installation de Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Installation des dépendances
+        run: npm ci
+
+      - name: Génération du client Prisma
+        run: npx prisma generate
+
+      - name: Vérification du typage TypeScript
+        run: npx tsc --noEmit
+
+      - name: Tests unitaires (Vitest)
+        run: npm test
+
+  # ─── Scan de vulnérabilités des dépendances (Trivy) ─────────────────────────
+  security:
+    name: Scan dépendances (Trivy)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout du code
+        uses: actions/checkout@v4
+
+      - name: Installation de Trivy
+        run: curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sudo sh -s -- -b /usr/local/bin
+
+      - name: Rapport des vulnérabilités (HIGH/CRITICAL, informatif)
+        run: trivy fs --scanners vuln --severity HIGH,CRITICAL --no-progress --exit-code 0 .
+
+      - name: Échec si vulnérabilité CRITICAL corrigeable
+        run: trivy fs --scanners vuln --severity CRITICAL --ignore-unfixed --no-progress --exit-code 1 .
