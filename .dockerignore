@@ -1,0 +1,17 @@
+# Dépendances et artefacts (réinstallés/régénérés dans l'image)
+node_modules
+src/generated
+
+# Ne jamais embarquer le dépôt git ni les secrets dans l'image
+.git
+.gitignore
+.env
+.env.*
+
+# Divers
+postman
+*.log
+.DS_Store
+.vscode
+.idea
+README.md

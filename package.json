@@ -9,6 +9,7 @@
   "scripts": {
     "dev": "nodemon --exec tsx src/server.ts",
     "start": "node src/server.js",
+    "start:prod": "tsx src/server.ts",
     "test": "vitest run",
     "test:watch": "vitest",
     "db:init": "npm run db:push && npm run db:seed",
