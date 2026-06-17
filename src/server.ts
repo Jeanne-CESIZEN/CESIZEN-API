@@ -14,8 +14,16 @@ import cors from "cors";
 
 const app = express();
 
+// Origines autorisées : configurables via CORS_ORIGIN (liste séparée par des
+// virgules) pour autoriser le front de production tout en gardant le dev local
+// par défaut.
+const allowedOrigins = (process.env.CORS_ORIGIN ?? "http://localhost:5173")
+  .split(",")
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+
 app.use(cors({
-  origin: "http://localhost:5173",
+  origin: allowedOrigins,
   credentials: true,
   allowedHeaders: ["Content-Type", "Authorization", "X-Client-Type"],
 }));
