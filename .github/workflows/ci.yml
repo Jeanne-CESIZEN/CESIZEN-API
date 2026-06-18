@@ -1,15 +1,17 @@
 name: CI - API
 
 # Pipeline back-end :
-#  - PR vers develop/main  : typecheck + tests unitaires + scan dépendances
-#  - Push sur develop      : idem + build & push image :staging  (-> env staging)
-#  - Push sur main         : idem + build & push image :prod     (-> env prod)
+#  - PR vers develop/main  : typecheck + tests + scan deps + détection de secrets
+#  - Push sur develop      : idem + build, scan image & push :staging  (-> staging)
+#  - Push sur main         : idem + build, scan image & push :prod     (-> prod)
+#  - Tag git v*            : idem + push :prod + :vX.Y.Z (release tracée)
 #  - Déclenchement manuel  : workflow_dispatch
 on:
   pull_request:
     branches: [develop, main]
   push:
     branches: [develop, main]
+    tags: ["v*"]
   workflow_dispatch:
 
 # Annule un run précédent encore en cours sur la même réf (économise les runners)
@@ -50,7 +52,7 @@ jobs:
       - name: Tests unitaires (Vitest)
         run: npm test
 
-  # ─── Scan de vulnérabilités des dépendances (Trivy) ─────────────────────────
+  # ─── Scan de vulnérabilités des dépendances (Trivy fs) ──────────────────────
   security:
     name: Scan dépendances (Trivy)
     runs-on: ubuntu-latest
@@ -67,33 +69,61 @@ jobs:
       - name: Échec si vulnérabilité CRITICAL corrigeable
         run: trivy fs --scanners vuln --severity CRITICAL --ignore-unfixed --no-progress --exit-code 1 .
 
-  # ─── Build de l'image + publication sur GHCR ────────────────────────────────
-  # Uniquement sur push/dispatch (pas sur les PR). Le tag dépend de la branche :
-  #   develop -> :staging   |   main -> :prod
-  # Sur la VM Azure, le Watchtower scopé sur l'env correspondant redéploie.
+  # ─── Détection de secrets commités (gitleaks) ───────────────────────────────
+  gitleaks:
+    name: Détection de secrets (gitleaks)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout du code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # historique complet : un secret supprimé reste détectable
+
+      - name: Scan des secrets
+        run: |
+          docker run --rm -v "$PWD:/repo" ghcr.io/gitleaks/gitleaks:latest \
+            detect --source=/repo --redact --verbose
+
+  # ─── Build + scan de l'image + publication sur GHCR ─────────────────────────
+  # Uniquement sur push/dispatch (pas sur les PR). L'image est buildée localement,
+  # scannée par Trivy, puis poussée seulement si le scan passe. Tags :
+  #   develop -> :staging | main -> :prod | tag v* -> :prod + :vX.Y.Z
+  # Sur la VM Azure, Watchtower (qui surveille :staging / :prod) redéploie.
   build-push:
-    name: Build & Push (GHCR)
-    needs: [test, security]
+    name: Build, scan & push (GHCR)
+    needs: [test, security, gitleaks]
     if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
+      security-events: write # upload du rapport SARIF dans l'onglet Security
     env:
       IMAGE_NAME: ghcr.io/jeanne-cesizen/cesizen-api
     steps:
       - name: Checkout du code
         uses: actions/checkout@v4
 
-      - name: Détermination de l'environnement et du SHA
+      - name: Détermination de l'environnement et des tags
         id: meta
         run: |
-          if [ "${{ github.ref_name }}" = "main" ]; then
-            echo "env=prod" >> "$GITHUB_OUTPUT"
+          SHA=$(git rev-parse --short HEAD)
+          VERSION=""
+          if [[ "${{ github.ref }}" == refs/tags/v* ]]; then
+            ENV=prod
+            VERSION="${{ github.ref_name }}"   # ex. v1.0.0
+          elif [ "${{ github.ref_name }}" = "main" ]; then
+            ENV=prod
           else
-            echo "env=staging" >> "$GITHUB_OUTPUT"
+            ENV=staging
           fi
-          echo "sha=$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
+          {
+            echo "tags<<EOF"
+            echo "${IMAGE_NAME}:${ENV}"
+            echo "${IMAGE_NAME}:sha-${SHA}"
+            [ -n "$VERSION" ] && echo "${IMAGE_NAME}:${VERSION}"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
 
       - name: Configuration de Buildx
         uses: docker/setup-buildx-action@v3
@@ -105,13 +135,48 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build & push
+      # 1. Build local (chargé dans le runner) pour scanner AVANT de pousser.
+      #    Le cache GHA est peuplé ici -> le push final est quasi instantané.
+      - name: Build local (pour scan, sans push)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          load: true
+          push: false
+          tags: scan-target:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # 2. Trivy sur l'image -> rapport SARIF (informatif, jamais bloquant)
+      - name: Trivy — rapport image (SARIF)
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: scan-target:latest
+          severity: HIGH,CRITICAL
+          exit-code: "0"
+          format: sarif
+          output: trivy-results.sarif
+
+      - name: Upload SARIF dans l'onglet Security
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: trivy-results.sarif
+
+      # 3. Gate strict : bloque le push si une vulnérabilité CRITICAL est corrigeable
+      - name: Trivy — gate (échec si CRITICAL corrigeable)
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: scan-target:latest
+          severity: CRITICAL
+          ignore-unfixed: true
+          exit-code: "1"
+
+      # 4. Push sur GHCR (rebuild instantané grâce au cache de l'étape 1)
+      - name: Push sur GHCR
         uses: docker/build-push-action@v6
         with:
           context: .
           push: true
-          tags: |
-            ${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.env }}
-            ${{ env.IMAGE_NAME }}:sha-${{ steps.meta.outputs.sha }}
+          tags: ${{ steps.meta.outputs.tags }}
           cache-from: type=gha
-          cache-to: type=gha,mode=max
