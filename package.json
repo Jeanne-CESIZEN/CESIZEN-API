@@ -16,6 +16,7 @@
     "db:studio": "npx prisma studio",
     "db:push": "prisma db push",
     "db:seed": "npx tsx prisma/seed/index.ts",
+    "admin:create": "tsx prisma/seed/admin.ts",
     "dk:start": "docker compose up -d"
   },
   "dependencies": {
